@@ -8,7 +8,6 @@
 #include "stm32f3xx_hal.h"
 
 #define TWO_LINES_ENABLE 		(0x01 << 3)
-#define MODULE_ADDRESS 			0x4E
 #define E_PIN_MASK 				0x04
 #define RS_PIN_MASK				0x01
 #define FUNCTION_SET_4_BIT_MODE 0x20
@@ -17,6 +16,7 @@
 #define DISPLAY_OFF				0x08
 #define INCREMENT_NO_SHIFT		0x06
 #define BACKLIGHT_ON			0x08
+#define SET_POSITION_MASK		0x80
 
 
 
@@ -101,3 +101,20 @@ void LCD_printf(I2C_HandleTypeDef* hi2c, char *data){
 		LCD_putchar(hi2c, *i);
 	}
 }
+
+void LCD_clear(I2C_HandleTypeDef* hi2c){
+	_LCD_send_command(hi2c, CLEAR_DISPLAY);
+}
+
+void LCD_set_position(I2C_HandleTypeDef* hi2c, uint8_t col, uint8_t row){
+	if((col <= 0x27 && col >= 0) && (row <= 1 && row >=0)){
+		uint8_t address = col + row * 0x40;
+		address |= SET_POSITION_MASK;
+		_LCD_send_command(hi2c, address);
+
+	}
+
+
+
+}
+

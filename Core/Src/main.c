@@ -161,6 +161,9 @@ static void MX_I2C2_Init(void);
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
+	  char data = '!';
+	  LCD_putchar(&hi2c3, data);
+
 }
 
 /* USER CODE END 0 */
@@ -201,9 +204,15 @@ int main(void)
   int year = 2024;
 //  char send[] = "hello world";
   char buf[20] = {0};
-  sprintf(buf, "Hello World%d%d", year, year);
-  LCD_printf(&hi2c3, buf);
-
+//  sprintf(buf, "Hello World%d", year);
+//  LCD_printf(&hi2c3, buf);
+  char data = '!';
+  LCD_set_position(&hi2c3, 3, 1);
+  LCD_putchar(&hi2c3, data);
+  LCD_set_position(&hi2c3, 0, 0);
+  LCD_putchar(&hi2c3, data);
+  LCD_set_position(&hi2c3, 15, 1);
+  LCD_putchar(&hi2c3, data);
   /* USER CODE END 2 */
 
   /* Infinite loop */
