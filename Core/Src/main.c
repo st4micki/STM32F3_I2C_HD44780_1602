@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <string.h>
+#include"hd44780_lcd_i2c.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,16 +33,16 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define TWO_LINES_ENABLE 		(0x01 << 3)
-#define MODULE_ADDRESS 			0x4E
-#define E_PIN_MASK 				0x04
-#define RS_PIN_MASK				0x01
-#define FUNCTION_SET_4_BIT_MODE 0x20
-#define CLEAR_DISPLAY 			0x01
-#define STARTUP 				0x30
-#define DISPLAY_OFF				0x08
-#define INCREMENT_NO_SHIFT		0x06
-#define BACKLIGHT_ON			0x08
+//#define TWO_LINES_ENABLE 		(0x01 << 3)
+//#define MODULE_ADDRESS 			0x4E
+//#define E_PIN_MASK 				0x04
+//#define RS_PIN_MASK				0x01
+//#define FUNCTION_SET_4_BIT_MODE 0x20
+//#define CLEAR_DISPLAY 			0x01
+//#define STARTUP 				0x30
+//#define DISPLAY_OFF				0x08
+//#define INCREMENT_NO_SHIFT		0x06
+//#define BACKLIGHT_ON			0x08
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -71,89 +72,89 @@ static void MX_I2C2_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-uint8_t LCD_get_young_bits(uint8_t data){
-	data <<= 4;
-	data &= 0xF0;
-	return data;
-
-}
-uint8_t LCD_get_old_bits(uint8_t data){
-	return data & 0xF0;
-}
-
-
+//uint8_t LCD_get_young_bits(uint8_t data){
+//	data <<= 4;
+//	data &= 0xF0;
+//	return data;
+//
+//}
+//uint8_t LCD_get_old_bits(uint8_t data){
+//	return data & 0xF0;
+//}
 
 
-void LCD_send_command(I2C_HandleTypeDef* hi2c, uint8_t command){
-	uint8_t send[4];
-	send[0] = LCD_get_old_bits(command) | E_PIN_MASK | BACKLIGHT_ON; // older half of the command byte with E pin set to high
-	send[1] = LCD_get_old_bits(command) | BACKLIGHT_ON; // older half of the command byte with E pin set to low
-	send[2] = LCD_get_young_bits(command) | E_PIN_MASK | BACKLIGHT_ON; // younger half of the command byte with E pin set to high
-	send[3] = LCD_get_young_bits(command) | BACKLIGHT_ON; // younger half of the command byte with E pin set to low
-	uint16_t send_size = sizeof(send);
-	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, send_size, 100);
-
-}
-
-void LCD_startup(I2C_HandleTypeDef* hi2c){
-	uint8_t send[2] = {
-			STARTUP | E_PIN_MASK | BACKLIGHT_ON,
-			STARTUP | BACKLIGHT_ON
-	};
-	HAL_Delay(20);
-	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, 2, 100);
-	HAL_Delay(5);
-	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, 2, 100);
-	HAL_Delay(1);
-	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, 2, 100);
 
 
-}
+//void LCD_send_command(I2C_HandleTypeDef* hi2c, uint8_t command){
+//	uint8_t send[4];
+//	send[0] = LCD_get_old_bits(command) | E_PIN_MASK | BACKLIGHT_ON; // older half of the command byte with E pin set to high
+//	send[1] = LCD_get_old_bits(command) | BACKLIGHT_ON; // older half of the command byte with E pin set to low
+//	send[2] = LCD_get_young_bits(command) | E_PIN_MASK | BACKLIGHT_ON; // younger half of the command byte with E pin set to high
+//	send[3] = LCD_get_young_bits(command) | BACKLIGHT_ON; // younger half of the command byte with E pin set to low
+//	uint16_t send_size = sizeof(send);
+//	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, send_size, 100);
+//
+//}
+
+//void LCD_startup(I2C_HandleTypeDef* hi2c){
+//	uint8_t send[2] = {
+//			STARTUP | E_PIN_MASK | BACKLIGHT_ON,
+//			STARTUP | BACKLIGHT_ON
+//	};
+//	HAL_Delay(20);
+//	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, 2, 100);
+//	HAL_Delay(5);
+//	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, 2, 100);
+//	HAL_Delay(1);
+//	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, 2, 100);
+//
+//
+//}
 
 
-void LCD_set_4_bits(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines){
-	uint8_t data[2] = {
-			FUNCTION_SET_4_BIT_MODE | E_PIN_MASK | BACKLIGHT_ON,
-			FUNCTION_SET_4_BIT_MODE | BACKLIGHT_ON
-	};
-	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS , data, 2, 100);
-	HAL_Delay(1);
-	if(num_of_lines == 2)
-		LCD_send_command(hi2c, FUNCTION_SET_4_BIT_MODE | TWO_LINES_ENABLE);
-}
+//void LCD_set_4_bits(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines){
+//	uint8_t data[2] = {
+//			FUNCTION_SET_4_BIT_MODE | E_PIN_MASK | BACKLIGHT_ON,
+//			FUNCTION_SET_4_BIT_MODE | BACKLIGHT_ON
+//	};
+//	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS , data, 2, 100);
+//	HAL_Delay(1);
+//	if(num_of_lines == 2)
+//		LCD_send_command(hi2c, FUNCTION_SET_4_BIT_MODE | TWO_LINES_ENABLE);
+//}
 
-void LCD_init(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines){
-	LCD_startup(hi2c);
-	HAL_Delay(1);
-	LCD_set_4_bits(hi2c, num_of_lines);
-	HAL_Delay(1);
-	LCD_send_command(hi2c, DISPLAY_OFF);
-	HAL_Delay(1);
-	LCD_send_command(hi2c, CLEAR_DISPLAY);
-	HAL_Delay(1);
-	LCD_send_command(hi2c, INCREMENT_NO_SHIFT);
-	HAL_Delay(1);
-	LCD_send_command(hi2c, 0x0C);
-	HAL_Delay(1);
+//void LCD_init(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines){
+//	LCD_startup(hi2c);
+//	HAL_Delay(1);
+//	LCD_set_4_bits(hi2c, num_of_lines);
+//	HAL_Delay(1);
+//	LCD_send_command(hi2c, DISPLAY_OFF);
+//	HAL_Delay(1);
+//	LCD_send_command(hi2c, CLEAR_DISPLAY);
+//	HAL_Delay(1);
+//	LCD_send_command(hi2c, INCREMENT_NO_SHIFT);
+//	HAL_Delay(1);
+//	LCD_send_command(hi2c, 0x0C);
+//	HAL_Delay(1);
+//
+//}
 
-}
+//void LCD_putchar(I2C_HandleTypeDef* hi2c, char data){
+//	uint8_t send[4];
+//	send[0] = LCD_get_old_bits((uint8_t)data) | E_PIN_MASK | RS_PIN_MASK | BACKLIGHT_ON; // older half of the command byte with E pin set to high
+//	send[1] = LCD_get_old_bits((uint8_t)data) | RS_PIN_MASK | BACKLIGHT_ON; // older half of the command byte with E pin set to low
+//	send[2] = LCD_get_young_bits((uint8_t)data) | E_PIN_MASK | RS_PIN_MASK | BACKLIGHT_ON; // younger half of the command byte with E pin set to high
+//	send[3] = LCD_get_young_bits((uint8_t)data) | RS_PIN_MASK | BACKLIGHT_ON; // younger half of the command byte with E pin set to low
+//	int16_t send_size = sizeof(send);
+//	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, send_size, 100);
+//
+//}
 
-void LCD_putchar(I2C_HandleTypeDef* hi2c, char data){
-	uint8_t send[4];
-	send[0] = LCD_get_old_bits((uint8_t)data) | E_PIN_MASK | RS_PIN_MASK | BACKLIGHT_ON; // older half of the command byte with E pin set to high
-	send[1] = LCD_get_old_bits((uint8_t)data) | RS_PIN_MASK | BACKLIGHT_ON; // older half of the command byte with E pin set to low
-	send[2] = LCD_get_young_bits((uint8_t)data) | E_PIN_MASK | RS_PIN_MASK | BACKLIGHT_ON; // younger half of the command byte with E pin set to high
-	send[3] = LCD_get_young_bits((uint8_t)data) | RS_PIN_MASK | BACKLIGHT_ON; // younger half of the command byte with E pin set to low
-	int16_t send_size = sizeof(send);
-	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, send_size, 100);
-
-}
-
-void LCD_printf(I2C_HandleTypeDef* hi2c, char *data){
-	for(char* i = data; *i != '\0'; i++){
-		LCD_putchar(hi2c, *i);
-	}
-}
+//void LCD_printf(I2C_HandleTypeDef* hi2c, char *data){
+//	for(char* i = data; *i != '\0'; i++){
+//		LCD_putchar(hi2c, *i);
+//	}
+//}
 
 
 
@@ -198,7 +199,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   LCD_init(&hi2c3, 2);
   int year = 2024;
-  char send[] = "hello world";
+//  char send[] = "hello world";
   char buf[20] = {0};
   sprintf(buf, "Hello World%d%d", year, year);
   LCD_printf(&hi2c3, buf);

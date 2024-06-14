@@ -1,0 +1,8 @@
+hd44780_lcd_i2c.c:23:9:_LCD_get_young_bits	1
+hd44780_lcd_i2c.c:31:9:_LCD_get_old_bits	1
+hd44780_lcd_i2c.c:35:6:_LCD_send_command	1
+hd44780_lcd_i2c.c:46:6:_LCD_startup	1
+hd44780_lcd_i2c.c:61:6:_LCD_set_4_bits	2
+hd44780_lcd_i2c.c:72:6:LCD_init	1
+hd44780_lcd_i2c.c:88:6:LCD_putchar	1
+hd44780_lcd_i2c.c:99:6:LCD_printf	2
