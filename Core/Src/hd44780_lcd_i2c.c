@@ -105,6 +105,11 @@ void LCD_printf(I2C_HandleTypeDef* hi2c, char *data){
 void LCD_clear(I2C_HandleTypeDef* hi2c){
 	//clears display and sets position to (0,0)
 	_LCD_send_command(hi2c, CLEAR_DISPLAY);
+	HAL_Delay(1);
+	_LCD_send_command(hi2c, INCREMENT_NO_SHIFT);
+	HAL_Delay(1);
+	_LCD_send_command(hi2c, 0x0C);
+	HAL_Delay(1);
 }
 
 void LCD_set_position(I2C_HandleTypeDef* hi2c, uint8_t col, uint8_t row){
