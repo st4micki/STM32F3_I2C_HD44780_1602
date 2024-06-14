@@ -7,4 +7,4 @@
 ../Core/Src/hd44780_lcd_i2c.c:88:6:LCD_putchar	32	static
 ../Core/Src/hd44780_lcd_i2c.c:99:6:LCD_printf	24	static
 ../Core/Src/hd44780_lcd_i2c.c:105:6:LCD_clear	16	static
-../Core/Src/hd44780_lcd_i2c.c:109:6:LCD_set_position	24	static
+../Core/Src/hd44780_lcd_i2c.c:114:6:LCD_set_position	24	static

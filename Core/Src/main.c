@@ -207,12 +207,14 @@ int main(void)
 //  sprintf(buf, "Hello World%d", year);
 //  LCD_printf(&hi2c3, buf);
   char data = '!';
-  LCD_set_position(&hi2c3, 3, 1);
+  LCD_set_position(&hi2c3, 3, 0);
+  LCD_clear(&hi2c3);
+  HAL_Delay(1);
   LCD_putchar(&hi2c3, data);
-  LCD_set_position(&hi2c3, 0, 0);
-  LCD_putchar(&hi2c3, data);
-  LCD_set_position(&hi2c3, 15, 1);
-  LCD_putchar(&hi2c3, data);
+//  LCD_set_position(&hi2c3, 0, 0);
+//  LCD_putchar(&hi2c3, data);
+//  LCD_set_position(&hi2c3, 15, 1);
+//  LCD_putchar(&hi2c3, data);
   /* USER CODE END 2 */
 
   /* Infinite loop */

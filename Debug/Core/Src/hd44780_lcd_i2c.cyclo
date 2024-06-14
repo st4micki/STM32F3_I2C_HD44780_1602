@@ -7,4 +7,4 @@ hd44780_lcd_i2c.c:72:6:LCD_init	1
 hd44780_lcd_i2c.c:88:6:LCD_putchar	1
 hd44780_lcd_i2c.c:99:6:LCD_printf	2
 hd44780_lcd_i2c.c:105:6:LCD_clear	1
-hd44780_lcd_i2c.c:109:6:LCD_set_position	3
+hd44780_lcd_i2c.c:114:6:LCD_set_position	3

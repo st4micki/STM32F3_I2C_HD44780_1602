@@ -103,10 +103,13 @@ void LCD_printf(I2C_HandleTypeDef* hi2c, char *data){
 }
 
 void LCD_clear(I2C_HandleTypeDef* hi2c){
+	//clears display and sets position to (0,0)
 	_LCD_send_command(hi2c, CLEAR_DISPLAY);
 }
 
 void LCD_set_position(I2C_HandleTypeDef* hi2c, uint8_t col, uint8_t row){
+	//rows and columns are 0 indexed
+	//function omits positions outside of displays memory
 	if((col <= 0x27 && col >= 0) && (row <= 1 && row >=0)){
 		uint8_t address = col + row * 0x40;
 		address |= SET_POSITION_MASK;
