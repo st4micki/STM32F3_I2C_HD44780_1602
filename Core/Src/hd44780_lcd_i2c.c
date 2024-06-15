@@ -54,14 +54,21 @@ typedef struct{
 LCD_current_pos lcd_pos;
 
 
-void LCD_delay_ms(uint32_t us, TIM_HandleTypeDef *htim){
+void LCD_delay_us(uint32_t us, TIM_HandleTypeDef *htim){
 	uint32_t apb_freq = 0;
 	if(htim->Instance == TIM6 || htim->Instance == TIM4 || htim->Instance == TIM3 || htim->Instance == TIM2)
 		apb_freq = HAL_RCC_GetPCLK1Freq();
 	else if(htim->Instance == TIM17 || htim->Instance == TIM16 ||htim->Instance == TIM15 || htim->Instance == TIM1)
 		apb_freq = HAL_RCC_GetPCLK2Freq();
-//	else
-//		apb_freq = HAL_RCC_GetHCLKFreq();
+	else
+		apb_freq = HAL_RCC_GetHCLKFreq();
+	uint16_t new_prescaler = (uint16_t)(apb_freq/1000000);
+	htim->Instance->PSC = new_prescaler - 1;
+	htim->Instance->ARR = 0xFFFF - 1;
+	__HAL_TIM_SET_COUNTER(htim, 0);
+	HAL_TIM_Base_Start(htim);
+	while(__HAL_TIM_GET_COUNTER(htim) < us);
+
 	HAL_Delay(1);
 }
 
