@@ -13,3 +13,4 @@ void LCD_clear(I2C_HandleTypeDef* hi2c);
 void LCD_set_position(I2C_HandleTypeDef* hi2c, uint8_t col, uint8_t row);
 void LCD_reset_position(I2C_HandleTypeDef *hi2c);
 void LCD_printf_align(I2C_HandleTypeDef *hi2c, char *data, uint8_t aligment);
+void LCD_delay_ms(uint32_t us, TIM_HandleTypeDef *htim);

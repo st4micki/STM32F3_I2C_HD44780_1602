@@ -6,6 +6,7 @@
  */
 #include "hd44780_lcd_i2c.h"
 #include "stm32f3xx_hal.h"
+#include "stm32f3xx_hal_rcc.h"
 #include <math.h>
 
 #define TWO_LINES_ENABLE 		(0x01 << 3)
@@ -18,6 +19,32 @@
 #define INCREMENT_NO_SHIFT		0x06
 #define BACKLIGHT_ON			0x08
 #define SET_POSITION_MASK		0x80
+#define CLOCK_NOT_DEFINED		0x00
+
+#ifndef TIM1
+	#define TIM1 CLOCK_NOT_DEFINED
+#endif
+#ifndef TIM15
+	#define TIM15 CLOCK_NOT_DEFINED
+#endif
+#ifndef TIM16
+	#define TIM16 CLOCK_NOT_DEFINED
+#endif
+#ifndef TIM17
+	#define TIM17 CLOCK_NOT_DEFINED
+#endif
+#ifndef TIM2
+	#define TIM17 CLOCK_NOT_DEFINED
+#endif
+#ifndef TIM3
+	#define TIM3 CLOCK_NOT_DEFINED
+#endif
+#ifndef TIM4
+	#define TIM4 CLOCK_NOT_DEFINED
+#endif
+#ifndef TIM6
+	#define TIM6 CLOCK_NOT_DEFINED
+#endif
 
 typedef struct{
 	uint8_t current_row;
@@ -25,6 +52,18 @@ typedef struct{
 } LCD_current_pos;
 
 LCD_current_pos lcd_pos;
+
+
+void LCD_delay_ms(uint32_t us, TIM_HandleTypeDef *htim){
+	uint32_t apb_freq = 0;
+	if(htim->Instance == TIM6 || htim->Instance == TIM4 || htim->Instance == TIM3 || htim->Instance == TIM2)
+		apb_freq = HAL_RCC_GetPCLK1Freq();
+	else if(htim->Instance == TIM17 || htim->Instance == TIM16 ||htim->Instance == TIM15 || htim->Instance == TIM1)
+		apb_freq = HAL_RCC_GetPCLK2Freq();
+//	else
+//		apb_freq = HAL_RCC_GetHCLKFreq();
+	HAL_Delay(1);
+}
 
 
 uint8_t _LCD_get_young_bits(uint8_t data){
@@ -50,6 +89,7 @@ void _LCD_send_command(I2C_HandleTypeDef* hi2c, uint8_t command){
 }
 
 void _LCD_startup(I2C_HandleTypeDef* hi2c){
+	//startup needs to use standard HAL_Delay(ms) in places where it needs to  due to displays hardware constrains
 	uint8_t send[2] = {
 			STARTUP | E_PIN_MASK | BACKLIGHT_ON,
 			STARTUP | BACKLIGHT_ON
