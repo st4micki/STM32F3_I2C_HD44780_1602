@@ -113,9 +113,10 @@ int main(void)
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
   LCD_init(&hi2c3, 2);
-  char data[] = "siema\n";
+  char data[] = "siema";
   char data2[] = "swiat";
   LCD_printf(&hi2c3, data);
+  LCD_printf_align(&hi2c3, data2, ALIGN_RIGHT);
 
 
   /* USER CODE END 2 */

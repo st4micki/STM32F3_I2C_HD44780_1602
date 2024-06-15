@@ -6,7 +6,7 @@
 ../Core/Src/hd44780_lcd_i2c.c:77:6:LCD_init	16	static
 ../Core/Src/hd44780_lcd_i2c.c:93:6:LCD_putchar	32	static
 ../Core/Src/hd44780_lcd_i2c.c:103:6:LCD_printf	24	static
-../Core/Src/hd44780_lcd_i2c.c:109:6:LCD_set_position	24	static
-../Core/Src/hd44780_lcd_i2c.c:123:6:LCD_reset_position	16	static
-../Core/Src/hd44780_lcd_i2c.c:128:6:LCD_clear	16	static
-../Core/Src/hd44780_lcd_i2c.c:139:6:LCD_printf_align	40	static
+../Core/Src/hd44780_lcd_i2c.c:111:6:LCD_set_position	24	static
+../Core/Src/hd44780_lcd_i2c.c:125:6:LCD_reset_position	16	static
+../Core/Src/hd44780_lcd_i2c.c:130:6:LCD_clear	16	static
+../Core/Src/hd44780_lcd_i2c.c:141:6:LCD_printf_align	40	static

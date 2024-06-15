@@ -101,6 +101,8 @@ void LCD_putchar(I2C_HandleTypeDef* hi2c, char data){
 }
 
 void LCD_printf(I2C_HandleTypeDef* hi2c, char *data){
+	//IMPLEMENT \n as NEWLINE
+	//IMPLEMENT \t as two spaces
 	for(char* i = data; *i != '\0'; i++)
 		LCD_putchar(hi2c, *i);
 
