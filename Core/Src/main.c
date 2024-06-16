@@ -79,12 +79,7 @@ static void MX_TIM6_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
-	  char data = '!';
-	  LCD_putchar(&hi2c3, data);
-
-}
 
 /* USER CODE END 0 */
 
@@ -122,7 +117,7 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-  LCD_init(&hi2c3, 2);
+  LCD_init(&hi2c3, 2, &htim1);
   char data[] = "siema";
   char data2[] = "swiat";
   LCD_printf(&hi2c3, data);
@@ -139,7 +134,6 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  LCD_delay_us(60000, &htim6);
 
     /* USER CODE BEGIN 3 */
   }
