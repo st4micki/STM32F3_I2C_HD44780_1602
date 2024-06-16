@@ -9,8 +9,7 @@
 void LCD_init(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines, TIM_HandleTypeDef* htim);
 void LCD_putchar(I2C_HandleTypeDef* hi2c, char data);
 void LCD_printf(I2C_HandleTypeDef* hi2c, char *data);
-void LCD_clear(I2C_HandleTypeDef* hi2c);
+void LCD_clear(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim);
 void LCD_set_position(I2C_HandleTypeDef* hi2c, uint8_t col, uint8_t row);
 void LCD_reset_position(I2C_HandleTypeDef *hi2c);
 void LCD_printf_align(I2C_HandleTypeDef *hi2c, char *data, uint8_t aligment);
-void _LCD_delay_us(uint32_t us, TIM_HandleTypeDef *htim);

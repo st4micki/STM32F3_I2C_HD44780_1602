@@ -20,6 +20,7 @@
 #define BACKLIGHT_ON			0x08
 #define SET_POSITION_MASK		0x80
 #define CLOCK_NOT_DEFINED		0x00
+#define US_BETWEEN_COMMANDS		375
 
 
 
@@ -35,7 +36,6 @@ LCD_current_pos lcd_pos;
 bool LCD_delay_us_first_call = TRUE;
 
 void _LCD_delay_us_init(TIM_HandleTypeDef *htim){
-	uint16_t us = 1000;
 //	uint32_t tick_start = HAL_GetTick();
 	uint32_t apb_freq = HAL_RCC_GetHCLKFreq();
 	uint16_t new_prescaler = (uint16_t)(apb_freq/1000000);
@@ -43,13 +43,12 @@ void _LCD_delay_us_init(TIM_HandleTypeDef *htim){
 	htim->Instance->ARR = 0xFFFF - 1;
 	htim->Instance->CNT = 0;
 	HAL_TIM_Base_Start(htim);
-	while(htim->Instance->CNT < us){}
+	while(htim->Instance->CNT < US_BETWEEN_COMMANDS){}
 	htim->Instance->CNT = 0;
 
 }
 
 void _LCD_delay_us(uint32_t us, TIM_HandleTypeDef *htim){
-	uint32_t tick_start = HAL_GetTick();
 	uint32_t apb_freq = HAL_RCC_GetHCLKFreq();
 	uint16_t new_prescaler = (uint16_t)(apb_freq/1000000);
 	htim->Instance->PSC = new_prescaler - 1;
@@ -58,8 +57,8 @@ void _LCD_delay_us(uint32_t us, TIM_HandleTypeDef *htim){
 	while(htim->Instance->CNT < us){}
 //	HAL_TIM_Base_Stop(htim);
 //	LCD_delay_us_first_call = FALSE;
-	uint32_t tick_diff = HAL_GetTick() - tick_start;
-	1+1;
+//	uint32_t tick_diff = HAL_GetTick() - tick_start;
+//	1+1;
 }
 
 
@@ -86,7 +85,6 @@ void _LCD_send_command(I2C_HandleTypeDef* hi2c, uint8_t command){
 }
 
 void _LCD_startup(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim){
-	//startup needs to use standard HAL_Delay(ms) in places where it needs to  due to displays hardware constrains
 	uint8_t send[2] = {
 			STARTUP | E_PIN_MASK | BACKLIGHT_ON,
 			STARTUP | BACKLIGHT_ON
@@ -101,7 +99,7 @@ void _LCD_startup(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim){
 
 }
 
-void _LCD_set_4_bits(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines, TIM_HandleTypeDef* htim){
+void _LCD_set_4_bits(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines){
 	uint8_t data[2] = {
 			FUNCTION_SET_4_BIT_MODE | E_PIN_MASK | BACKLIGHT_ON,
 			FUNCTION_SET_4_BIT_MODE | BACKLIGHT_ON};
@@ -114,17 +112,17 @@ void _LCD_set_4_bits(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines, TIM_HandleTy
 void LCD_init(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines, TIM_HandleTypeDef* htim){
 	_LCD_delay_us_init(htim);
 	_LCD_startup(hi2c, htim);
-	_LCD_delay_us(500, htim);
-	_LCD_set_4_bits(hi2c, num_of_lines ,htim);
-	_LCD_delay_us(500, htim);
+	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
+	_LCD_set_4_bits(hi2c, num_of_lines);
+	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	_LCD_send_command(hi2c, DISPLAY_OFF);
-	_LCD_delay_us(500, htim);
+	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	_LCD_send_command(hi2c, CLEAR_DISPLAY);
-	_LCD_delay_us(500, htim);
+	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	_LCD_send_command(hi2c, INCREMENT_NO_SHIFT);
-	_LCD_delay_us(500, htim);
+	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	_LCD_send_command(hi2c, 0x0C);
-	_LCD_delay_us(500, htim);;
+	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 
 }
 
@@ -165,14 +163,14 @@ void LCD_reset_position(I2C_HandleTypeDef *hi2c){
 }
 
 
-void LCD_clear(I2C_HandleTypeDef* hi2c){
+void LCD_clear(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim){
 	//clears display and sets position to (0,0)
 	_LCD_send_command(hi2c, CLEAR_DISPLAY);
-	HAL_Delay(1);
+	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	_LCD_send_command(hi2c, INCREMENT_NO_SHIFT);
-	HAL_Delay(1);
+	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	_LCD_send_command(hi2c, 0x0C);
-	HAL_Delay(1);
+	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	LCD_set_position(hi2c, lcd_pos.current_col, lcd_pos.current_row);
 }
 
