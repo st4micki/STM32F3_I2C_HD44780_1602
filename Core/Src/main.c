@@ -127,7 +127,7 @@ int main(void)
   char data2[] = "swiat";
   LCD_printf(&hi2c3, data);
   LCD_printf_align(&hi2c3, data2, ALIGN_RIGHT);
-  LCD_delay_us(1, &htim6);
+
 
 
 
@@ -139,6 +139,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  LCD_delay_us(60000, &htim6);
 
     /* USER CODE BEGIN 3 */
   }
