@@ -79,9 +79,11 @@ static void MX_TIM6_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+LCD_HandleTypeDef my_display = {&hi2c3, &htim1, 0, 0};
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
-	LCD_clear(&hi2c3, &htim6);
 
 }
 
@@ -122,11 +124,12 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-  LCD_init(&hi2c3, 2, &htim6);
+  LCD_init(&my_display, 2);
   char data[] = "siema";
   char data2[] = "kurwa";
-  LCD_printf(&hi2c3, data);
-  LCD_printf_align(&hi2c3, data2, ALIGN_RIGHT);
+  LCD_set_position(&my_display, 1, 1);
+  LCD_printf(&my_display, data);
+
 
 
 

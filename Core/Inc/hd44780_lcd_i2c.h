@@ -6,10 +6,17 @@
 #define ALIGN_MIDDLE	2
 #define MAX_COLUMN		15
 
-void LCD_init(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines, TIM_HandleTypeDef* htim);
-void LCD_putchar(I2C_HandleTypeDef* hi2c, char data);
-void LCD_printf(I2C_HandleTypeDef* hi2c, char *data);
-void LCD_clear(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim);
-void LCD_set_position(I2C_HandleTypeDef* hi2c, uint8_t col, uint8_t row);
-void LCD_reset_position(I2C_HandleTypeDef *hi2c);
-void LCD_printf_align(I2C_HandleTypeDef *hi2c, char *data, uint8_t aligment);
+typedef struct LCD_HandleTypeDef {
+	I2C_HandleTypeDef *hi2c;
+	TIM_HandleTypeDef *htim;
+	uint8_t current_col;
+	uint8_t current_row;
+}LCD_HandleTypeDef;
+
+void LCD_init(LCD_HandleTypeDef* lcd, uint8_t num_of_lines);
+void LCD_putchar(LCD_HandleTypeDef* lcd, char data);
+void LCD_printf(LCD_HandleTypeDef* lcd, char *data);
+void LCD_clear(LCD_HandleTypeDef* lcd);
+void LCD_set_position(LCD_HandleTypeDef* lcd, uint8_t col, uint8_t row);
+void LCD_reset_position(LCD_HandleTypeDef* lcd);
+void LCD_printf_align(LCD_HandleTypeDef* lcd, char *data, uint8_t alignment);

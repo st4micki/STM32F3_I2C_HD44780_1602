@@ -20,7 +20,7 @@
 #define BACKLIGHT_ON			0x08
 #define SET_POSITION_MASK		0x80
 #define CLOCK_NOT_DEFINED		0x00
-#define US_BETWEEN_COMMANDS		375
+#define US_BETWEEN_COMMANDS		500
 
 
 
@@ -109,7 +109,9 @@ void _LCD_set_4_bits(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines){
 		_LCD_send_command(hi2c, FUNCTION_SET_4_BIT_MODE | TWO_LINES_ENABLE);
 }
 
-void LCD_init(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines, TIM_HandleTypeDef* htim){
+void LCD_init(LCD_HandleTypeDef* lcd, uint8_t num_of_lines){
+	I2C_HandleTypeDef* hi2c = lcd->hi2c;
+	TIM_HandleTypeDef* htim = lcd->htim;
 	_LCD_delay_us_init(htim);
 	_LCD_startup(hi2c, htim);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
@@ -126,7 +128,8 @@ void LCD_init(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines, TIM_HandleTypeDef* 
 
 }
 
-void LCD_putchar(I2C_HandleTypeDef* hi2c, char data){
+void LCD_putchar(LCD_HandleTypeDef* lcd, char data){
+	I2C_HandleTypeDef* hi2c = lcd->hi2c;
 	uint8_t send[4] = {
 			_LCD_get_old_bits((uint8_t)data) | E_PIN_MASK | RS_PIN_MASK | BACKLIGHT_ON, // older half of the command byte with E pin set to high
 			_LCD_get_old_bits((uint8_t)data) | RS_PIN_MASK | BACKLIGHT_ON, // older half of the command byte with E pin set to low
@@ -136,17 +139,18 @@ void LCD_putchar(I2C_HandleTypeDef* hi2c, char data){
 	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, send_size, 100);
 }
 
-void LCD_printf(I2C_HandleTypeDef* hi2c, char *data){
+void LCD_printf(LCD_HandleTypeDef* lcd, char *data){
 	//IMPLEMENT \n as NEWLINE
 	//IMPLEMENT \t as two spaces
 	for(char* i = data; *i != '\0'; i++)
-		LCD_putchar(hi2c, *i);
+		LCD_putchar(lcd, *i);
 
 }
 
-void LCD_set_position(I2C_HandleTypeDef* hi2c, uint8_t col, uint8_t row){
+void LCD_set_position(LCD_HandleTypeDef* lcd, uint8_t col, uint8_t row){
 	//rows and columns are 0 indexed
 	//function omits positions outside of displays memory
+	I2C_HandleTypeDef* hi2c = lcd->hi2c;
 	if((col <= 0x27 && col >= 0) && (row <= 1 && row >=0)){
 		uint8_t address = col + row * 0x40;
 		address |= SET_POSITION_MASK;
@@ -158,38 +162,40 @@ void LCD_set_position(I2C_HandleTypeDef* hi2c, uint8_t col, uint8_t row){
 
 }
 
-void LCD_reset_position(I2C_HandleTypeDef *hi2c){
-	LCD_set_position(hi2c, 0, 0);
+void LCD_reset_position(LCD_HandleTypeDef* lcd){
+	LCD_set_position(lcd, 0, 0);
 }
 
 
-void LCD_clear(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim){
+void LCD_clear(LCD_HandleTypeDef* lcd){
 	//clears display and sets position to (0,0)
+	I2C_HandleTypeDef* hi2c = lcd->hi2c;
+	TIM_HandleTypeDef* htim = lcd->htim;
 	_LCD_send_command(hi2c, CLEAR_DISPLAY);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	_LCD_send_command(hi2c, INCREMENT_NO_SHIFT);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	_LCD_send_command(hi2c, 0x0C);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
-	LCD_set_position(hi2c, lcd_pos.current_col, lcd_pos.current_row);
+	LCD_set_position(lcd, lcd_pos.current_col, lcd_pos.current_row);
 }
 
-void LCD_printf_align(I2C_HandleTypeDef *hi2c, char *data, uint8_t alignment){
+void LCD_printf_align(LCD_HandleTypeDef* lcd, char *data, uint8_t alignment){
 	//prints given string with left or middle alignment of the text
 	//function resets cursor position to (0,0) after execution
 	uint16_t len = 0;
 	for(char* i = data; *i != '\0'; i++, len++);
 	switch(alignment){
 		case ALIGN_RIGHT:
-			LCD_set_position(hi2c, MAX_COLUMN - len + 1, lcd_pos.current_row);
+			LCD_set_position(lcd, MAX_COLUMN - len + 1, lcd_pos.current_row);
 			break;
 		case ALIGN_MIDDLE:
-			LCD_set_position(hi2c, (uint8_t)(floor(MAX_COLUMN + 1)/2) - (uint8_t)(len / 2), lcd_pos.current_row);
+			LCD_set_position(lcd, (uint8_t)(floor(MAX_COLUMN + 1)/2) - (uint8_t)(len / 2), lcd_pos.current_row);
 			break;
 	}
 	for(char* i = data; *i != '\0'; i++)
-		LCD_putchar(hi2c, *i);
-	LCD_reset_position(hi2c);
+		LCD_putchar(lcd, *i);
+	LCD_reset_position(lcd);
 
 }
 
