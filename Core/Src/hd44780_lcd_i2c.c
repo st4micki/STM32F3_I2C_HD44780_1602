@@ -74,17 +74,21 @@ uint8_t _LCD_get_old_bits(uint8_t data){
 	return data & 0xF0;
 }
 
-void _LCD_send_command(I2C_HandleTypeDef* hi2c, uint8_t command){
+void _LCD_send_command(LCD_HandleTypeDef* lcd,  uint8_t command){
+	I2C_HandleTypeDef* hi2c = lcd->hi2c;
+	uint8_t address = lcd->i2c_address;
 	uint8_t send[4] = {
 		_LCD_get_old_bits(command) | E_PIN_MASK | BACKLIGHT_ON, // older half of the command byte with E pin set to high
 		_LCD_get_old_bits(command) | BACKLIGHT_ON, // older half of the command byte with E pin set to low
 		_LCD_get_young_bits(command) | E_PIN_MASK | BACKLIGHT_ON, // younger half of the command byte with E pin set to high
 		_LCD_get_young_bits(command) | BACKLIGHT_ON}; // younger half of the command byte with E pin set to low
 	uint16_t send_size = sizeof(send);
-	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, send_size, 100);
+	HAL_I2C_Master_Transmit(hi2c, address, send, send_size, 100);
 }
 
-void _LCD_startup(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim){
+void _LCD_startup(LCD_HandleTypeDef* lcd){
+	TIM_HandleTypeDef* htim = lcd->htim;
+	I2C_HandleTypeDef* hi2c = lcd->hi2c;
 	uint8_t send[2] = {
 			STARTUP | E_PIN_MASK | BACKLIGHT_ON,
 			STARTUP | BACKLIGHT_ON
@@ -108,37 +112,37 @@ void _LCD_set_4_bits(LCD_HandleTypeDef* lcd){
 	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS , data, 2, 100);
 	HAL_Delay(1);
 	if(num_of_lines == 2)
-		_LCD_send_command(hi2c, FUNCTION_SET_4_BIT_MODE | TWO_LINES_ENABLE);
+		_LCD_send_command(lcd, FUNCTION_SET_4_BIT_MODE | TWO_LINES_ENABLE);
 }
 
 void LCD_init(LCD_HandleTypeDef* lcd){
-	I2C_HandleTypeDef* hi2c = lcd->hi2c;
 	TIM_HandleTypeDef* htim = lcd->htim;
 	_LCD_delay_us_init(htim);
-	_LCD_startup(hi2c, htim);
+	_LCD_startup(lcd);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	_LCD_set_4_bits(lcd);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
-	_LCD_send_command(hi2c, DISPLAY_OFF);
+	_LCD_send_command(lcd, DISPLAY_OFF);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
-	_LCD_send_command(hi2c, CLEAR_DISPLAY);
+	_LCD_send_command(lcd, CLEAR_DISPLAY);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
-	_LCD_send_command(hi2c, INCREMENT_NO_SHIFT);
+	_LCD_send_command(lcd, INCREMENT_NO_SHIFT);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
-	_LCD_send_command(hi2c, 0x0C);
+	_LCD_send_command(lcd, 0x0C);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 
 }
 
 void LCD_putchar(LCD_HandleTypeDef* lcd, char data){
 	I2C_HandleTypeDef* hi2c = lcd->hi2c;
+	uint8_t address = lcd->i2c_address;
 	uint8_t send[4] = {
 			_LCD_get_old_bits((uint8_t)data) | E_PIN_MASK | RS_PIN_MASK | BACKLIGHT_ON, // older half of the command byte with E pin set to high
 			_LCD_get_old_bits((uint8_t)data) | RS_PIN_MASK | BACKLIGHT_ON, // older half of the command byte with E pin set to low
 			_LCD_get_young_bits((uint8_t)data) | E_PIN_MASK | RS_PIN_MASK | BACKLIGHT_ON, // younger half of the command byte with E pin set to high
 			_LCD_get_young_bits((uint8_t)data) | RS_PIN_MASK | BACKLIGHT_ON}; // younger half of the command byte with E pin set to low
 	int16_t send_size = sizeof(send);
-	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS, send, send_size, 100);
+	HAL_I2C_Master_Transmit(hi2c, address, send, send_size, 100);
 }
 
 void LCD_printf(LCD_HandleTypeDef* lcd, char *data){
@@ -152,13 +156,12 @@ void LCD_printf(LCD_HandleTypeDef* lcd, char *data){
 void LCD_set_position(LCD_HandleTypeDef* lcd, uint8_t col, uint8_t row){
 	//rows and columns are 0 indexed
 	//function omits positions outside of displays memory
-	I2C_HandleTypeDef* hi2c = lcd->hi2c;
 	if((col <= 0x27 && col >= 0) && (row <= 1 && row >=0)){
 		uint8_t address = col + row * 0x40;
 		address |= SET_POSITION_MASK;
 		lcd_pos.current_col = col;
 		lcd_pos.current_row = row;
-		_LCD_send_command(hi2c, address);
+		_LCD_send_command(lcd, address);
 
 	}
 
@@ -171,13 +174,12 @@ void LCD_reset_position(LCD_HandleTypeDef* lcd){
 
 void LCD_clear(LCD_HandleTypeDef* lcd){
 	//clears display and sets position to (0,0)
-	I2C_HandleTypeDef* hi2c = lcd->hi2c;
 	TIM_HandleTypeDef* htim = lcd->htim;
-	_LCD_send_command(hi2c, CLEAR_DISPLAY);
+	_LCD_send_command(lcd, CLEAR_DISPLAY);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
-	_LCD_send_command(hi2c, INCREMENT_NO_SHIFT);
+	_LCD_send_command(lcd, INCREMENT_NO_SHIFT);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
-	_LCD_send_command(hi2c, 0x0C);
+	_LCD_send_command(lcd, 0x0C);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	LCD_set_position(lcd, lcd_pos.current_col, lcd_pos.current_row);
 }

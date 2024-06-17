@@ -9,6 +9,7 @@
 typedef struct LCD_HandleTypeDef {
 	I2C_HandleTypeDef *hi2c;
 	TIM_HandleTypeDef *htim;
+	uint8_t i2c_address;
 	uint8_t current_col;
 	uint8_t current_row;
 	uint8_t num_of_rows;
