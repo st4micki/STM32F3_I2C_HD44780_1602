@@ -99,7 +99,9 @@ void _LCD_startup(I2C_HandleTypeDef* hi2c, TIM_HandleTypeDef* htim){
 
 }
 
-void _LCD_set_4_bits(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines){
+void _LCD_set_4_bits(LCD_HandleTypeDef* lcd){
+	I2C_HandleTypeDef* hi2c = lcd->hi2c;
+	uint8_t num_of_lines = lcd->num_of_rows;
 	uint8_t data[2] = {
 			FUNCTION_SET_4_BIT_MODE | E_PIN_MASK | BACKLIGHT_ON,
 			FUNCTION_SET_4_BIT_MODE | BACKLIGHT_ON};
@@ -109,13 +111,13 @@ void _LCD_set_4_bits(I2C_HandleTypeDef* hi2c, uint8_t num_of_lines){
 		_LCD_send_command(hi2c, FUNCTION_SET_4_BIT_MODE | TWO_LINES_ENABLE);
 }
 
-void LCD_init(LCD_HandleTypeDef* lcd, uint8_t num_of_lines){
+void LCD_init(LCD_HandleTypeDef* lcd){
 	I2C_HandleTypeDef* hi2c = lcd->hi2c;
 	TIM_HandleTypeDef* htim = lcd->htim;
 	_LCD_delay_us_init(htim);
 	_LCD_startup(hi2c, htim);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
-	_LCD_set_4_bits(hi2c, num_of_lines);
+	_LCD_set_4_bits(lcd);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	_LCD_send_command(hi2c, DISPLAY_OFF);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);

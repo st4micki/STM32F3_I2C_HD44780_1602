@@ -11,9 +11,10 @@ typedef struct LCD_HandleTypeDef {
 	TIM_HandleTypeDef *htim;
 	uint8_t current_col;
 	uint8_t current_row;
+	uint8_t num_of_rows;
 }LCD_HandleTypeDef;
 
-void LCD_init(LCD_HandleTypeDef* lcd, uint8_t num_of_lines);
+void LCD_init(LCD_HandleTypeDef* lcd);
 void LCD_putchar(LCD_HandleTypeDef* lcd, char data);
 void LCD_printf(LCD_HandleTypeDef* lcd, char *data);
 void LCD_clear(LCD_HandleTypeDef* lcd);
