@@ -27,23 +27,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  00020018  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0000dad9  00000000  00000000  00020048  2**0
+ 12 .debug_info   0000dad8  00000000  00000000  00020048  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 00001d52  00000000  00000000  0002db21  2**0
+ 13 .debug_abbrev 00001d52  00000000  00000000  0002db20  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  14 .debug_aranges 00000d20  00000000  00000000  0002f878  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  15 .debug_ranges 00000c38  00000000  00000000  00030598  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  0001b93f  00000000  00000000  000311d0  2**0
+ 16 .debug_macro  0001b945  00000000  00000000  000311d0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00010153  00000000  00000000  0004cb0f  2**0
+ 17 .debug_line   00010153  00000000  00000000  0004cb15  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000a3267  00000000  00000000  0005cc62  2**0
+ 18 .debug_str    000a327a  00000000  00000000  0005cc68  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  000ffec9  2**0
+ 19 .comment      00000050  00000000  00000000  000ffee2  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00003738  00000000  00000000  000fff1c  2**2
+ 20 .debug_frame  00003738  00000000  00000000  000fff34  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -121,7 +121,7 @@ void _LCD_delay_us_init(TIM_HandleTypeDef *htim){
  8000206:	687b      	ldr	r3, [r7, #4]
  8000208:	681b      	ldr	r3, [r3, #0]
  800020a:	6a5b      	ldr	r3, [r3, #36]	; 0x24
- 800020c:	f5b3 7ffa 	cmp.w	r3, #500	; 0x1f4
+ 800020c:	f5b3 7fbe 	cmp.w	r3, #380	; 0x17c
  8000210:	d3f9      	bcc.n	8000206 <_LCD_delay_us_init+0x3e>
 	htim->Instance->CNT = 0;
  8000212:	687b      	ldr	r3, [r7, #4]
@@ -438,14 +438,14 @@ void LCD_init(LCD_HandleTypeDef* lcd){
  8000412:	f7ff ff95 	bl	8000340 <_LCD_startup>
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
  8000416:	68f9      	ldr	r1, [r7, #12]
- 8000418:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
+ 8000418:	f44f 70be 	mov.w	r0, #380	; 0x17c
  800041c:	f7ff ff04 	bl	8000228 <_LCD_delay_us>
 	_LCD_set_4_bits(lcd);
  8000420:	6878      	ldr	r0, [r7, #4]
  8000422:	f7ff ffc7 	bl	80003b4 <_LCD_set_4_bits>
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
  8000426:	68f9      	ldr	r1, [r7, #12]
- 8000428:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
+ 8000428:	f44f 70be 	mov.w	r0, #380	; 0x17c
  800042c:	f7ff fefc 	bl	8000228 <_LCD_delay_us>
 	_LCD_send_command(lcd, DISPLAY_OFF);
  8000430:	2108      	movs	r1, #8
@@ -453,7 +453,7 @@ void LCD_init(LCD_HandleTypeDef* lcd){
  8000434:	f7ff ff44 	bl	80002c0 <_LCD_send_command>
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
  8000438:	68f9      	ldr	r1, [r7, #12]
- 800043a:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
+ 800043a:	f44f 70be 	mov.w	r0, #380	; 0x17c
  800043e:	f7ff fef3 	bl	8000228 <_LCD_delay_us>
 	_LCD_send_command(lcd, CLEAR_DISPLAY);
  8000442:	2101      	movs	r1, #1
@@ -461,7 +461,7 @@ void LCD_init(LCD_HandleTypeDef* lcd){
  8000446:	f7ff ff3b 	bl	80002c0 <_LCD_send_command>
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
  800044a:	68f9      	ldr	r1, [r7, #12]
- 800044c:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
+ 800044c:	f44f 70be 	mov.w	r0, #380	; 0x17c
  8000450:	f7ff feea 	bl	8000228 <_LCD_delay_us>
 	_LCD_send_command(lcd, INCREMENT_NO_SHIFT);
  8000454:	2106      	movs	r1, #6
@@ -469,7 +469,7 @@ void LCD_init(LCD_HandleTypeDef* lcd){
  8000458:	f7ff ff32 	bl	80002c0 <_LCD_send_command>
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
  800045c:	68f9      	ldr	r1, [r7, #12]
- 800045e:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
+ 800045e:	f44f 70be 	mov.w	r0, #380	; 0x17c
  8000462:	f7ff fee1 	bl	8000228 <_LCD_delay_us>
 	_LCD_send_command(lcd, 0x0C);
  8000466:	210c      	movs	r1, #12
@@ -477,7 +477,7 @@ void LCD_init(LCD_HandleTypeDef* lcd){
  800046a:	f7ff ff29 	bl	80002c0 <_LCD_send_command>
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
  800046e:	68f9      	ldr	r1, [r7, #12]
- 8000470:	f44f 70fa 	mov.w	r0, #500	; 0x1f4
+ 8000470:	f44f 70be 	mov.w	r0, #380	; 0x17c
  8000474:	f7ff fed8 	bl	8000228 <_LCD_delay_us>
 
 }
