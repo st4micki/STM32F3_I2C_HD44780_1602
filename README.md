@@ -4,6 +4,13 @@
 
 
 # User Manual:
+   **Including the library to the project**:<br />
+   Source file hd44780_lcd_i2c.c is located in: ./Core/Src directory<br />
+   Header file hd44780_lcd_i2c.h is located in: ./Core/Irc directory<br />
+   Copy the source file to: your_project/Core/Src/<br /> 
+   and the header file to: your_project/Core/Inc/<br /> 
+   
+   
    **IOC setup**:<br />
      1.Initialize High Speed Clock<br />
      2.Initialize I2C peripheral in Standard Mode<br />
