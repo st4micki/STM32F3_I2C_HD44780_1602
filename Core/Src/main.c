@@ -126,13 +126,16 @@ int main(void)
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
   LCD_init(&my_display);
-  char data[] = "siema";
-  char data2[] = "gitara";
+  char data[] = "HD44780";
+  char data2[] = "I2C";
+  char data3[] = "by:";
+  char data4[] = "st4micki";
   LCD_set_position(&my_display, 0, 0);
   LCD_printf(&my_display, data);
-  LCD_printf_align(&my_display, data2, ALIGN_MIDDLE);
-
-
+  LCD_printf_align(&my_display, data2, ALIGN_RIGHT);
+  LCD_set_position(&my_display, 0, 1);
+  LCD_printf(&my_display, data3);
+  LCD_printf_align(&my_display, data4, ALIGN_MIDDLE);
 
 
 
