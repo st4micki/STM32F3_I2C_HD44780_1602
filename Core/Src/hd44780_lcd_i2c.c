@@ -31,21 +31,23 @@ typedef enum {FALSE, TRUE} bool;
 bool LCD_delay_us_first_call = TRUE;
 
 void _LCD_delay_us_init(TIM_HandleTypeDef *htim){
-
-	uint32_t apb_freq = HAL_RCC_GetHCLKFreq();
-	uint16_t new_prescaler = (uint16_t)(apb_freq/1000000);
+	//this function initializes user defined timer
+	//calling this function during LCD_Init() lets _LCD_Delay_us() generate accurate delays
+	uint32_t apb_freq = HAL_RCC_GetHCLKFreq(); //fetch HCLK frequency. It appears that delays work the same no matter what APB bus the timer is connected to.
+	uint16_t new_prescaler = (uint16_t)(apb_freq/1000000); //timer prescaler is set so every increment of CNT take 1 microsecond
 	htim->Instance->PSC = new_prescaler - 1;
 	htim->Instance->ARR = 0xFFFF - 1;
-	htim->Instance->CNT = 0;
+	htim->Instance->CNT = 0; //just to be sure that timer starts counting from 0,  CNT is reseted here
 	HAL_TIM_Base_Start(htim);
-	while(htim->Instance->CNT < US_BETWEEN_COMMANDS){}
+	while(htim->Instance->CNT < US_BETWEEN_COMMANDS){} //while is blocking until right ammonunt of time elapses
 	htim->Instance->CNT = 0;
 
 }
 
 void _LCD_delay_us(uint32_t us, TIM_HandleTypeDef *htim){
+	//this a blocking delay funcions that generates delays measured in microseconds
 	uint32_t apb_freq = HAL_RCC_GetHCLKFreq();
-	uint16_t new_prescaler = (uint16_t)(apb_freq/1000000);
+	uint16_t new_prescaler = (uint16_t)(apb_freq/1000000); //timer prescaler is set so every increment of CNT take 1 microsecond
 	htim->Instance->PSC = new_prescaler - 1;
 	htim->Instance->ARR = 0xFFFF - 1;
 	htim->Instance->CNT = 0;
@@ -55,6 +57,7 @@ void _LCD_delay_us(uint32_t us, TIM_HandleTypeDef *htim){
 
 
 uint8_t _LCD_get_young_bits(uint8_t data){
+	//shifts data's bits to the right by 4 places and masks 4 most significant bits
 	data <<= 4;
 	data &= 0xF0;
 	return data;
@@ -63,10 +66,13 @@ uint8_t _LCD_get_young_bits(uint8_t data){
 
 
 uint8_t _LCD_get_old_bits(uint8_t data){
+	//masks 4 most significant bits, clears 4 less significant bits
 	return data & 0xF0;
 }
 
 void _LCD_send_command(LCD_HandleTypeDef* lcd,  uint8_t command){
+	//sends 8-bit command to the display. Command is split into two 4 bit commands.
+	//every 4-bit command has to be sent with E_pin enabled and later disabled
 	I2C_HandleTypeDef* hi2c = lcd->hi2c;
 	uint8_t address = lcd->i2c_address;
 	uint8_t send[4] = {
@@ -75,10 +81,12 @@ void _LCD_send_command(LCD_HandleTypeDef* lcd,  uint8_t command){
 		_LCD_get_young_bits(command) | E_PIN_MASK | BACKLIGHT_ON, // younger half of the command byte with E pin set to high
 		_LCD_get_young_bits(command) | BACKLIGHT_ON}; // younger half of the command byte with E pin set to low
 	uint16_t send_size = sizeof(send);
-	HAL_I2C_Master_Transmit(hi2c, address, send, send_size, 100);
+	HAL_I2C_Master_Transmit(hi2c, address, send, send_size, 100); //data is transmitted through I2C interface using HAL library function
 }
 
 void _LCD_startup(LCD_HandleTypeDef* lcd){
+	/*Initializing display by instruction. According to HD44780's data sheet "If the power supply conditions for correctly operating the internal reset circuit are not met, initialization by
+	instructions becomes necessary" this is done just in case*/
 	TIM_HandleTypeDef* htim = lcd->htim;
 	I2C_HandleTypeDef* hi2c = lcd->hi2c;
 	uint8_t send[2] = {
@@ -96,6 +104,7 @@ void _LCD_startup(LCD_HandleTypeDef* lcd){
 }
 
 void _LCD_set_4_bits(LCD_HandleTypeDef* lcd){
+	//sets a mode that lets the display take 4-bit commands by sending 8-bit command first
 	I2C_HandleTypeDef* hi2c = lcd->hi2c;
 	uint8_t num_of_lines = lcd->num_of_rows;
 	uint8_t data[2] = {
@@ -104,10 +113,12 @@ void _LCD_set_4_bits(LCD_HandleTypeDef* lcd){
 	HAL_I2C_Master_Transmit(hi2c, MODULE_ADDRESS , data, 2, 100);
 	HAL_Delay(1);
 	if(num_of_lines == 2)
+		// it is possible to 2 lines of text on the display command is sent with special mask
 		_LCD_send_command(lcd, FUNCTION_SET_4_BIT_MODE | TWO_LINES_ENABLE);
 }
 
 void LCD_init(LCD_HandleTypeDef* lcd){
+	//initializes lcd using LCD_HandleTypeDef
 	TIM_HandleTypeDef* htim = lcd->htim;
 	_LCD_delay_us_init(htim);
 	_LCD_startup(lcd);
@@ -126,6 +137,7 @@ void LCD_init(LCD_HandleTypeDef* lcd){
 }
 
 void LCD_putchar(LCD_HandleTypeDef* lcd, char data){
+	//prints a single character in cursors position
 	I2C_HandleTypeDef* hi2c = lcd->hi2c;
 	uint8_t address = lcd->i2c_address;
 	uint8_t send[4] = {
@@ -138,6 +150,7 @@ void LCD_putchar(LCD_HandleTypeDef* lcd, char data){
 }
 
 void LCD_printf(LCD_HandleTypeDef* lcd, char *data){
+	//prints a string starting at cursors position
 	//IMPLEMENT \n as NEWLINE
 	//IMPLEMENT \t as two spaces
 	for(char* i = data; *i != '\0'; i++)
@@ -160,6 +173,7 @@ void LCD_set_position(LCD_HandleTypeDef* lcd, uint8_t col, uint8_t row){
 }
 
 void LCD_reset_position(LCD_HandleTypeDef* lcd){
+	//sets cursors position to (0,0)
 	LCD_set_position(lcd, 0, 0);
 }
 

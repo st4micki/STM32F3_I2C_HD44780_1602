@@ -87,11 +87,12 @@ void _LCD_delay_us_init(TIM_HandleTypeDef *htim){
  80001ca:	b084      	sub	sp, #16
  80001cc:	af00      	add	r7, sp, #0
  80001ce:	6078      	str	r0, [r7, #4]
-
-	uint32_t apb_freq = HAL_RCC_GetHCLKFreq();
+	//this function initializes user defined timer
+	//calling this function during LCD_Init() lets _LCD_Delay_us() generate accurate delays
+	uint32_t apb_freq = HAL_RCC_GetHCLKFreq(); //fetch HCLK frequency. It appears that delays work the same no matter what APB bus the timer is connected to.
  80001d0:	f002 ffe2 	bl	8003198 <HAL_RCC_GetHCLKFreq>
  80001d4:	60f8      	str	r0, [r7, #12]
-	uint16_t new_prescaler = (uint16_t)(apb_freq/1000000);
+	uint16_t new_prescaler = (uint16_t)(apb_freq/1000000); //timer prescaler is set so every increment of CNT take 1 microsecond
  80001d6:	68fb      	ldr	r3, [r7, #12]
  80001d8:	4a12      	ldr	r2, [pc, #72]	; (8000224 <_LCD_delay_us_init+0x5c>)
  80001da:	fba2 2303 	umull	r2, r3, r2, r3
@@ -108,7 +109,7 @@ void _LCD_delay_us_init(TIM_HandleTypeDef *htim){
  80001ee:	681b      	ldr	r3, [r3, #0]
  80001f0:	f64f 72fe 	movw	r2, #65534	; 0xfffe
  80001f4:	62da      	str	r2, [r3, #44]	; 0x2c
-	htim->Instance->CNT = 0;
+	htim->Instance->CNT = 0; //just to be sure that timer starts counting from 0,  CNT is reseted here
  80001f6:	687b      	ldr	r3, [r7, #4]
  80001f8:	681b      	ldr	r3, [r3, #0]
  80001fa:	2200      	movs	r2, #0
@@ -116,7 +117,7 @@ void _LCD_delay_us_init(TIM_HandleTypeDef *htim){
 	HAL_TIM_Base_Start(htim);
  80001fe:	6878      	ldr	r0, [r7, #4]
  8000200:	f003 f9c0 	bl	8003584 <HAL_TIM_Base_Start>
-	while(htim->Instance->CNT < US_BETWEEN_COMMANDS){}
+	while(htim->Instance->CNT < US_BETWEEN_COMMANDS){} //while is blocking until right ammonunt of time elapses
  8000204:	bf00      	nop
  8000206:	687b      	ldr	r3, [r7, #4]
  8000208:	681b      	ldr	r3, [r3, #0]
@@ -145,10 +146,11 @@ void _LCD_delay_us(uint32_t us, TIM_HandleTypeDef *htim){
  800022c:	af00      	add	r7, sp, #0
  800022e:	6078      	str	r0, [r7, #4]
  8000230:	6039      	str	r1, [r7, #0]
+	//this a blocking delay funcions that generates delays measured in microseconds
 	uint32_t apb_freq = HAL_RCC_GetHCLKFreq();
  8000232:	f002 ffb1 	bl	8003198 <HAL_RCC_GetHCLKFreq>
  8000236:	60f8      	str	r0, [r7, #12]
-	uint16_t new_prescaler = (uint16_t)(apb_freq/1000000);
+	uint16_t new_prescaler = (uint16_t)(apb_freq/1000000); //timer prescaler is set so every increment of CNT take 1 microsecond
  8000238:	68fb      	ldr	r3, [r7, #12]
  800023a:	4a0f      	ldr	r2, [pc, #60]	; (8000278 <_LCD_delay_us+0x50>)
  800023c:	fba2 2303 	umull	r2, r3, r2, r3
@@ -196,6 +198,7 @@ uint8_t _LCD_get_young_bits(uint8_t data){
  8000280:	af00      	add	r7, sp, #0
  8000282:	4603      	mov	r3, r0
  8000284:	71fb      	strb	r3, [r7, #7]
+	//shifts data's bits to the right by 4 places and masks 4 most significant bits
 	data <<= 4;
  8000286:	79fb      	ldrb	r3, [r7, #7]
  8000288:	011b      	lsls	r3, r3, #4
@@ -223,6 +226,7 @@ uint8_t _LCD_get_old_bits(uint8_t data){
  80002a6:	af00      	add	r7, sp, #0
  80002a8:	4603      	mov	r3, r0
  80002aa:	71fb      	strb	r3, [r7, #7]
+	//masks 4 most significant bits, clears 4 less significant bits
 	return data & 0xF0;
  80002ac:	79fb      	ldrb	r3, [r7, #7]
  80002ae:	f023 030f 	bic.w	r3, r3, #15
@@ -243,6 +247,8 @@ void _LCD_send_command(LCD_HandleTypeDef* lcd,  uint8_t command){
  80002c6:	6078      	str	r0, [r7, #4]
  80002c8:	460b      	mov	r3, r1
  80002ca:	70fb      	strb	r3, [r7, #3]
+	//sends 8-bit command to the display. Command is split into two 4 bit commands.
+	//every 4-bit command has to be sent with E_pin enabled and later disabled
 	I2C_HandleTypeDef* hi2c = lcd->hi2c;
  80002cc:	687b      	ldr	r3, [r7, #4]
  80002ce:	681b      	ldr	r3, [r3, #0]
@@ -291,7 +297,7 @@ void _LCD_send_command(LCD_HandleTypeDef* lcd,  uint8_t command){
 	uint16_t send_size = sizeof(send);
  8000320:	2304      	movs	r3, #4
  8000322:	823b      	strh	r3, [r7, #16]
-	HAL_I2C_Master_Transmit(hi2c, address, send, send_size, 100);
+	HAL_I2C_Master_Transmit(hi2c, address, send, send_size, 100); //data is transmitted through I2C interface using HAL library function
  8000324:	7cfb      	ldrb	r3, [r7, #19]
  8000326:	b299      	uxth	r1, r3
  8000328:	8a3b      	ldrh	r3, [r7, #16]
@@ -313,6 +319,8 @@ void _LCD_startup(LCD_HandleTypeDef* lcd){
  8000342:	b088      	sub	sp, #32
  8000344:	af02      	add	r7, sp, #8
  8000346:	6078      	str	r0, [r7, #4]
+	/*Initializing display by instruction. According to HD44780's data sheet "If the power supply conditions for correctly operating the internal reset circuit are not met, initialization by
+	instructions becomes necessary" this is done just in case*/
 	TIM_HandleTypeDef* htim = lcd->htim;
  8000348:	687b      	ldr	r3, [r7, #4]
  800034a:	685b      	ldr	r3, [r3, #4]
@@ -378,6 +386,7 @@ void _LCD_set_4_bits(LCD_HandleTypeDef* lcd){
  80003b6:	b086      	sub	sp, #24
  80003b8:	af02      	add	r7, sp, #8
  80003ba:	6078      	str	r0, [r7, #4]
+	//sets a mode that lets the display take 4-bit commands by sending 8-bit command first
 	I2C_HandleTypeDef* hi2c = lcd->hi2c;
  80003bc:	687b      	ldr	r3, [r7, #4]
  80003be:	681b      	ldr	r3, [r3, #0]
@@ -406,6 +415,7 @@ void _LCD_set_4_bits(LCD_HandleTypeDef* lcd){
  80003e6:	7afb      	ldrb	r3, [r7, #11]
  80003e8:	2b02      	cmp	r3, #2
  80003ea:	d103      	bne.n	80003f4 <_LCD_set_4_bits+0x40>
+		// it is possible to 2 lines of text on the display command is sent with special mask
 		_LCD_send_command(lcd, FUNCTION_SET_4_BIT_MODE | TWO_LINES_ENABLE);
  80003ec:	2128      	movs	r1, #40	; 0x28
  80003ee:	6878      	ldr	r0, [r7, #4]
@@ -423,6 +433,7 @@ void LCD_init(LCD_HandleTypeDef* lcd){
  80003fe:	b084      	sub	sp, #16
  8000400:	af00      	add	r7, sp, #0
  8000402:	6078      	str	r0, [r7, #4]
+	//initializes lcd using LCD_HandleTypeDef
 	TIM_HandleTypeDef* htim = lcd->htim;
  8000404:	687b      	ldr	r3, [r7, #4]
  8000406:	685b      	ldr	r3, [r3, #4]
@@ -492,6 +503,7 @@ void LCD_putchar(LCD_HandleTypeDef* lcd, char data){
  8000486:	6078      	str	r0, [r7, #4]
  8000488:	460b      	mov	r3, r1
  800048a:	70fb      	strb	r3, [r7, #3]
+	//prints a single character in cursors position
 	I2C_HandleTypeDef* hi2c = lcd->hi2c;
  800048c:	687b      	ldr	r3, [r7, #4]
  800048e:	681b      	ldr	r3, [r3, #0]
@@ -563,6 +575,7 @@ void LCD_printf(LCD_HandleTypeDef* lcd, char *data){
  8000504:	af00      	add	r7, sp, #0
  8000506:	6078      	str	r0, [r7, #4]
  8000508:	6039      	str	r1, [r7, #0]
+	//prints a string starting at cursors position
 	//IMPLEMENT \n as NEWLINE
 	//IMPLEMENT \t as two spaces
 	for(char* i = data; *i != '\0'; i++)
@@ -651,6 +664,7 @@ void LCD_reset_position(LCD_HandleTypeDef* lcd){
  8000584:	b082      	sub	sp, #8
  8000586:	af00      	add	r7, sp, #0
  8000588:	6078      	str	r0, [r7, #4]
+	//sets cursors position to (0,0)
 	LCD_set_position(lcd, 0, 0);
  800058a:	2200      	movs	r2, #0
  800058c:	2100      	movs	r1, #0
