@@ -26,17 +26,12 @@
 
 
 typedef enum {FALSE, TRUE} bool;
-typedef struct{
-	uint8_t current_row;
-	uint8_t current_col;
-} LCD_current_pos;
 
-LCD_current_pos lcd_pos;
 
 bool LCD_delay_us_first_call = TRUE;
 
 void _LCD_delay_us_init(TIM_HandleTypeDef *htim){
-//	uint32_t tick_start = HAL_GetTick();
+
 	uint32_t apb_freq = HAL_RCC_GetHCLKFreq();
 	uint16_t new_prescaler = (uint16_t)(apb_freq/1000000);
 	htim->Instance->PSC = new_prescaler - 1;
@@ -55,10 +50,7 @@ void _LCD_delay_us(uint32_t us, TIM_HandleTypeDef *htim){
 	htim->Instance->ARR = 0xFFFF - 1;
 	htim->Instance->CNT = 0;
 	while(htim->Instance->CNT < us){}
-//	HAL_TIM_Base_Stop(htim);
-//	LCD_delay_us_first_call = FALSE;
-//	uint32_t tick_diff = HAL_GetTick() - tick_start;
-//	1+1;
+
 }
 
 
@@ -159,8 +151,8 @@ void LCD_set_position(LCD_HandleTypeDef* lcd, uint8_t col, uint8_t row){
 	if((col <= 0x27 && col >= 0) && (row <= 1 && row >=0)){
 		uint8_t address = col + row * 0x40;
 		address |= SET_POSITION_MASK;
-		lcd_pos.current_col = col;
-		lcd_pos.current_row = row;
+		lcd->current_col = col;
+		lcd->current_row = row;
 		_LCD_send_command(lcd, address);
 
 	}
@@ -181,7 +173,7 @@ void LCD_clear(LCD_HandleTypeDef* lcd){
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
 	_LCD_send_command(lcd, 0x0C);
 	_LCD_delay_us(US_BETWEEN_COMMANDS, htim);
-	LCD_set_position(lcd, lcd_pos.current_col, lcd_pos.current_row);
+	LCD_set_position(lcd, lcd->current_col, lcd->current_row);
 }
 
 void LCD_printf_align(LCD_HandleTypeDef* lcd, char *data, uint8_t alignment){
@@ -191,10 +183,10 @@ void LCD_printf_align(LCD_HandleTypeDef* lcd, char *data, uint8_t alignment){
 	for(char* i = data; *i != '\0'; i++, len++);
 	switch(alignment){
 		case ALIGN_RIGHT:
-			LCD_set_position(lcd, MAX_COLUMN - len + 1, lcd_pos.current_row);
+			LCD_set_position(lcd, MAX_COLUMN - len + 1, lcd->current_row);
 			break;
 		case ALIGN_MIDDLE:
-			LCD_set_position(lcd, (uint8_t)(floor(MAX_COLUMN + 1)/2) - (uint8_t)(len / 2), lcd_pos.current_row);
+			LCD_set_position(lcd, (uint8_t)(floor(MAX_COLUMN + 1)/2) - (uint8_t)(len / 2), lcd->current_row);
 			break;
 	}
 	for(char* i = data; *i != '\0'; i++)

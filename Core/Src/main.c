@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include"hd44780_lcd_i2c.h"
+#include"hd44780_lcd_i2c.h"
 #include "stm32f3xx_hal_rcc.h"
 
 
@@ -127,9 +128,9 @@ int main(void)
   LCD_init(&my_display);
   char data[] = "siema";
   char data2[] = "gitara";
-  LCD_set_position(&my_display, 1, 1);
+  LCD_set_position(&my_display, 0, 0);
   LCD_printf(&my_display, data);
-  LCD_printf_align(&my_display, data2, ALIGN_RIGHT);
+  LCD_printf_align(&my_display, data2, ALIGN_MIDDLE);
 
 
 
